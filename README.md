@@ -14,8 +14,8 @@ The dataset contains anonymized multimedia data from a controlled experiment wit
 - **Participants**: 60 (20 educators, 20 students, 20 administrators)
 - **Institutions**: Tomas Bata University, Czech Technical University, University of Economics Prague
 - **Domain**: E-learning platform requirements
-- **Collection Period**: January-March 2024
-- **Ethics Approval**: IRB-2024-SE-003
+- **Collection Period**: January-March 2025
+- **Ethics Approval**: IRB-2025-SE-003
 
 ## Data Structure
 
