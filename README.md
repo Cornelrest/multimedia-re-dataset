@@ -93,7 +93,7 @@ audio, sr = librosa.load(audio_path, sr=16000)
 - All data has been anonymized following GDPR requirements
 - Participant identifiers have been replaced with random IDs
 - Personal information has been removed from transcripts
-- Ethics approval obtained from university review board (IRB-2024-SE-003)
+- Ethics approval obtained from university review board (IRB-2025-SE-003)
 - All participants provided informed consent for data sharing
 
 ## File Formats
