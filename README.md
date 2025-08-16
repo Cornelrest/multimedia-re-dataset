@@ -5,7 +5,7 @@
 
 ## Overview
 
-This dataset accompanies the research paper "Knowledge Extraction from Multimedia Data in Requirements Engineering: An Empirical Study" published in Requirements Engineering journal.
+This dataset accompanies the research paper "Knowledge Extraction from Multimedia Data in Requirements Engineering: An Empirical Study," suitable for a journal publication.
 
 The dataset contains anonymized multimedia data from a controlled experiment with 60 participants across three Czech universities, comparing traditional text-based requirements elicitation with multimedia-enhanced approaches.
 
@@ -109,7 +109,7 @@ audio, sr = librosa.load(audio_path, sr=16000)
 If you use this dataset in your research, please cite:
 
 ```bibtex
-@article{okechukwu2024multimedia,
+@article{okechukwu2025multimedia,
   title={Knowledge Extraction from Multimedia Data in Requirements Engineering: An Empirical Study},
   author={Okechukwu, Cornelius Chimuanya},
   journal={****},
