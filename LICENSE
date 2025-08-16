@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Cornelrest
+Copyright (c) 2024 Cornelius Chimuanya Okechukwu, Tomas Bata University in Zlin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,67 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Additional Terms for Academic Use
+
+### Citation Requirement
+
+If you use this dataset or framework in academic research, please cite:
+
+```bibtex
+@article{okechukwu2024multimedia,
+  title={Knowledge Extraction from Multimedia Data in Requirements Engineering: An Empirical Study},
+  author={Okechukwu, Cornelius Chimuanya},
+  journal={Requirements Engineering},
+  year={2024},
+  publisher={Springer},
+  institution={Tomas Bata University in Zlin},
+  doi={10.5281/zenodo.XXXXXX}
+}
+```
+
+### Ethical Use Guidelines
+
+Users of this dataset agree to:
+
+1. **Respect Privacy**: The dataset is anonymized, maintain this anonymization
+2. **Academic Integrity**: Properly cite and acknowledge the source
+3. **Responsible Use**: Use the data for legitimate research and educational purposes
+4. **Share Improvements**: Consider contributing improvements back to the community
+5. **Report Issues**: Notify maintainers of any data quality issues discovered
+
+### Data Usage Terms
+
+- **Research Use**: Freely permitted for academic and commercial research
+- **Educational Use**: Encouraged for teaching requirements engineering concepts  
+- **Redistribution**: Permitted with proper attribution
+- **Modification**: Allowed, but please document changes clearly
+- **Commercial Use**: Permitted under the MIT license terms
+
+### Disclaimer
+
+This dataset is generated based on empirical research findings and is intended
+for research and educational purposes. While efforts have been made to ensure
+statistical accuracy and realism, users should validate the appropriateness
+of this dataset for their specific research questions and contexts.
+
+The synthetic nature of this dataset means it may not capture all nuances
+present in real-world requirements engineering scenarios. Users should consider
+supplementing with real-world data when appropriate for their research.
+
+### Contact
+
+For questions about licensing, usage, or collaboration:
+
+**Cornelius Chimuanya Okechukwu**  
+Faculty of Applied Informatics  
+Tomas Bata University in Zlin  
+📧 okechukwu@utb.cz
+
+### Acknowledgments
+
+This work was supported by the Czech Science Foundation and Tomas Bata University.
+We thank the participants from the three Czech universities who contributed to
+the original empirical study that informed this dataset.

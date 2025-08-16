@@ -1,0 +1,271 @@
+# Requirements Engineering Dataset - Docker Compose
+# ================================================
+# Multi-service configuration for different use cases
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Dataset Generation Service
+  # ============================================================================
+  dataset-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-}
+        VCS_REF: ${VCS_REF:-}
+        VERSION: ${VERSION:-1.0.0}
+    container_name: re-dataset-generator
+    volumes:
+      - ./data_output:/app/generated_data
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "python", "-c", "import dataset_generator; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    
+  # ============================================================================
+  # Validation Service
+  # ============================================================================
+  dataset-validator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: re-dataset-validator
+    volumes:
+      - ./data_output:/app/generated_data:ro
+      - ./validation_output:/app/validation_output
+    environment:
+      - PYTHONPATH=/app
+      - DATA_DIR=/app/generated_data
+    command: ["python", "validate_dataset.py", "--data-dir", "/app/generated_data"]
+    depends_on:
+      dataset-generator:
+        condition: service_healthy
+    restart: "no"
+
+  # ============================================================================
+  # Analysis Service
+  # ============================================================================
+  dataset-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: analysis
+    container_name: re-dataset-analyzer
+    volumes:
+      - ./data_output:/app/generated_data:ro
+      - ./analysis_output:/app/analysis_output
+    environment:
+      - PYTHONPATH=/app
+      - DATA_DIR=/app/generated_data
+      - OUTPUT_DIR=/app/analysis_output
+    command: ["python", "example_analysis.py"]
+    depends_on:
+      - dataset-validator
+    restart: "no"
+
+  # ============================================================================
+  # Jupyter Notebook Service
+  # ============================================================================
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: notebook
+    container_name: re-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data_output:/app/generated_data
+      - ./notebooks:/app/notebooks
+      - ./analysis_output:/app/analysis_output
+    environment:
+      - PYTHONPATH=/app
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-requirements-engineering}
+    command: >
+      bash -c "
+        python dataset_generator.py &&
+        jupyter lab --port=8888 --no-browser --allow-root --ip=0.0.0.0 
+                   --NotebookApp.token='${JUPYTER_TOKEN:-requirements-engineering}'
+                   --NotebookApp.allow_origin='*'
+      "
+    restart: unless-stopped
+
+  # ============================================================================
+  # Development Service
+  # ============================================================================
+  development:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: re-development
+    volumes:
+      - .:/app/workspace
+      - ./data_output:/app/generated_data
+    environment:
+      - PYTHONPATH=/app
+      - DEVELOPMENT=true
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+    restart: unless-stopped
+
+  # ============================================================================
+  # Web Dashboard Service (Future Enhancement)
+  # ============================================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: analysis
+    container_name: re-dashboard
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./data_output:/app/generated_data:ro
+      - ./analysis_output:/app/analysis_output:ro
+    environment:
+      - PYTHONPATH=/app
+      - DASH_HOST=0.0.0.0
+      - DASH_PORT=8050
+    command: >
+      python -c "
+      import dash
+      from dash import html, dcc
+      import plotly.graph_objects as go
+      import pandas as pd
+      import os
+      
+      app = dash.Dash(__name__)
+      
+      app.layout = html.Div([
+          html.H1('Requirements Engineering Dataset Dashboard'),
+          html.P('Interactive dashboard for dataset exploration and analysis.'),
+          dcc.Graph(
+              id='sample-graph',
+              figure=go.Figure(data=go.Bar(x=['Control', 'Treatment'], y=[78.4, 96.8]),
+                              layout=go.Layout(title='Requirements Identified by Group'))
+          )
+      ])
+      
+      if __name__ == '__main__':
+          app.run_server(host='0.0.0.0', port=8050, debug=True)
+      "
+    depends_on:
+      - dataset-analyzer
+    restart: unless-stopped
+
+  # ============================================================================
+  # Testing Service
+  # ============================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: re-test-runner
+    volumes:
+      - .:/app/workspace
+    environment:
+      - PYTHONPATH=/app
+      - PYTEST_CURRENT_TEST=""
+    command: ["python", "-m", "pytest", "tests/", "-v", "--cov=.", "--cov-report=html"]
+    profiles:
+      - testing
+    restart: "no"
+
+  # ============================================================================
+  # Documentation Service
+  # ============================================================================
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: re-docs
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app/workspace
+      - ./docs:/app/docs
+    working_dir: /app/docs
+    command: >
+      bash -c "
+        pip install sphinx sphinx-rtd-theme myst-parser &&
+        sphinx-quickstart -q -p 'Requirements Engineering Dataset' 
+                          -a 'Cornelius Chimuanya Okechukwu' 
+                          -v '1.0.0' --ext-autodoc --ext-viewcode 
+                          --makefile --no-batchfile . &&
+        make html &&
+        cd _build/html &&
+        python -m http.server 8000
+      "
+    profiles:
+      - documentation
+    restart: unless-stopped
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  data_output:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data_output
+      
+  analysis_output:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./analysis_output
+      
+  validation_output:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./validation_output
+
+  jupyter_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  default:
+    name: requirements-engineering
+    driver: bridge
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+# Create a .env file in the project root with these variables:
+#
+# # Build Information
+# BUILD_DATE=2024-08-12T10:00:00Z
+# VCS_REF=main
+# VERSION=1.0.0
+#
+# # Jupyter Configuration
+# JUPYTER_TOKEN=your-secure-token-here
+#
+# # Logging
+# LOG_LEVEL=INFO
+#
+# # Performance
+# PYTHONUNBUFFERED=1
+# PYTHONDONTWRITEBYTECODE=1
