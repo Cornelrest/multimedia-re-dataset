@@ -112,9 +112,9 @@ If you use this dataset in your research, please cite:
 @article{okechukwu2024multimedia,
   title={Knowledge Extraction from Multimedia Data in Requirements Engineering: An Empirical Study},
   author={Okechukwu, Cornelius Chimuanya},
-  journal={Requirements Engineering},
-  year={2024},
-  publisher={Springer}
+  journal={****},
+  year={2025},
+  publisher={****}
 }
 ```
 
