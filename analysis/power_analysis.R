@@ -1,5 +1,12 @@
+r
 # Power analysis for independent t-tests   
-# lst:power, lst:rpackages
+# Listing: Power Analysis Implementation (lst:power)
+library(tidyverse)
+library(effectsize)
+library(pwr)
+library(car)
+library(psych)
+
 power.t.test(
   n = 30,                    # Sample size per group
   delta = 0.8,               # Effect size (Cohen's d)
