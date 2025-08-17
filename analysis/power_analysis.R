@@ -1,4 +1,5 @@
-# Power analysis for independent t-tests
+# Power analysis for independent t-tests   
+# lst:power, lst:rpackages
 power.t.test(
   n = 30,                    # Sample size per group
   delta = 0.8,               # Effect size (Cohen's d)
