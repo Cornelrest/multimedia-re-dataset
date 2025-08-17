@@ -3,7 +3,49 @@
 # Multi-stage Docker build for efficient containerization
 
 # ============================================================================
-# Stage 1: Base Python environment
+Stage 1: Docker Environment Setup
+# ============================================================================
+# Dockerfile
+FROM nvidia/cuda:11.8-devel-ubuntu20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.9 \
+    python3-pip \
+    tesseract-ocr \
+    tesseract-ocr-ces \
+    ffmpeg \
+    libsndfile1 \
+    git \
+    wget \
+    curl
+
+# Install conda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda \
+    && rm Miniconda3-latest-Linux-x86_64.sh
+
+ENV PATH=/opt/conda/bin:$PATH
+
+# Copy environment file and install dependencies
+COPY environment.yml /app/
+WORKDIR /app
+RUN conda env create -f environment.yml
+
+# Install additional requirements
+COPY requirements.txt /app/
+RUN pip install -r requirements.txt
+
+# Download model files
+RUN python -c "import transformers; transformers.AutoModel.from_pretrained('bert-base-uncased')"
+RUN python -c "import spacy; spacy.download('en_core_web_sm')"
+
+EXPOSE 8888
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+# ============================================================================
+Stage 2: Base Python environment
 # ============================================================================
 FROM python:3.9-slim-bullseye AS base
 
@@ -27,7 +69,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ============================================================================
-# Stage 2: Dependencies installation
+# Stage 3: Dependencies installation
 # ============================================================================
 FROM base AS dependencies
 
@@ -40,7 +82,7 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip cache purge
 
 # ============================================================================
-# Stage 3: Development environment (optional)
+# Stage 4: Development environment (optional)
 # ============================================================================
 FROM dependencies AS development
 
@@ -60,7 +102,7 @@ EXPOSE 8888
 CMD ["python", "dataset_generator.py"]
 
 # ============================================================================
-# Stage 4: Production environment
+# Stage 5: Production environment
 # ============================================================================
 FROM dependencies AS production
 
@@ -93,7 +135,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 CMD ["python", "dataset_generator.py"]
 
 # ============================================================================
-# Stage 5: Analysis environment
+# Stage 6: Analysis environment
 # ============================================================================
 FROM production AS analysis
 
@@ -116,7 +158,7 @@ EXPOSE 8050 8501
 CMD ["python", "example_analysis.py"]
 
 # ============================================================================
-# Stage 6: Jupyter notebook environment
+# Stage 7: Jupyter notebook environment
 # ============================================================================
 FROM development AS notebook
 
