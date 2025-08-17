@@ -76,7 +76,33 @@ with open('ground_truth/expert_requirements.json', 'r') as f:
 # Load satisfaction scores
 satisfaction = pd.read_csv('participant_data/satisfaction_scores.csv')
 ```
+## Software Dependencies and Versions
 
+### Verified Package Versions
+
+This project has been tested with specific package versions for reproducibility:
+
+#### Natural Language Processing
+- BERT: `bert-base-uncased` (HuggingFace: `transformers==4.30.2`)
+- SpaCy Model: `en_core_web_sm-3.6.0`
+- VADER Sentiment: `vaderSentiment==3.3.2`
+- YAKE Keywords: `yake==0.4.8`
+
+#### Computer Vision
+- YOLO: `ultralytics==8.0.134` (YOLOv8n model)
+- OpenCV: `opencv-python==4.8.0.74`
+- Tesseract OCR: `tesseract-ocr==5.3.0` (with eng+ces language packs)
+
+#### Audio Processing
+- LibROSA: `librosa==0.10.1`
+- Google Speech Recognition: `SpeechRecognition==3.10.0`
+- PyAudio: `PyAudio==0.2.11`
+
+### Installation
+
+#### Option 1: Using Pip (existing method)
+```bash
+pip install -r requirements.txt
 ### Audio Processing
 
 ```python
