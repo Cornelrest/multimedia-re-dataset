@@ -114,14 +114,6 @@ audio_path = 'audio_recordings/treatment_group/participant_001.wav'
 audio, sr = librosa.load(audio_path, sr=16000)
 ```
 
-## Privacy and Ethics
-
-- All data has been anonymized following GDPR requirements
-- Participant identifiers have been replaced with random IDs
-- Personal information has been removed from transcripts
-- Ethics approval obtained from university review board (IRB-2025-SE-003)
-- All participants provided informed consent for data sharing
-
 ## File Formats
 
 - **Audio**: WAV format, 16kHz sampling rate, mono
@@ -130,8 +122,15 @@ audio, sr = librosa.load(audio_path, sr=16000)
 - **Transcripts**: JSON format with timestamps
 - **Metadata**: CSV and JSON formats
 
-## Citation
+## Privacy and Ethics
 
+- All data has been anonymized following GDPR requirements
+- Participant identifiers have been replaced with random IDs
+- Personal information has been removed from transcripts
+- Ethics approval obtained from university review board (IRB-2025-SE-003)
+- All participants provided informed consent for data sharing
+
+## Citation
 If you use this dataset in your research, please cite:
 
 ```bibtex
