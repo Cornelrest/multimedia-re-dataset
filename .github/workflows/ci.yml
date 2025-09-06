@@ -1,7 +1,7 @@
 name: Dataset Generation and Validation
 
 on:
-  workflow_dispatch:   # Manual trigger
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -10,7 +10,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 2 * * 1'  # Weekly run on Monday at 02:00 UTC
+    - cron: '0 2 * * 1'
 
 jobs:
   test:
@@ -46,7 +46,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov flake8 black
+          pip install pytest pytest-cov flake8 black pandas numpy scipy
 
       - name: Lint with flake8
         run: |
@@ -91,8 +91,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Generate dataset with different seeds
-        run: |
-          python -c '
+        run: python -c '
 from dataset_generator import RequirementsDatasetGenerator
 import numpy as np
 
@@ -106,10 +105,8 @@ gen2.generate_complete_dataset("test_data_2")
 '
 
       - name: Check reproducibility
-        run: |
-          python -c '
+        run: python -c '
 import pandas as pd
-import numpy as np
 
 df1 = pd.read_csv("test_data_1/participants.csv")
 df2 = pd.read_csv("test_data_2/participants.csv")
@@ -137,11 +134,10 @@ else:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install scipy pandas numpy
+          pip install pandas numpy scipy
 
       - name: Generate and validate statistical properties
-        run: |
-          python -c '
+        run: python -c '
 from dataset_generator import RequirementsDatasetGenerator
 import pandas as pd
 from scipy import stats
@@ -172,4 +168,3 @@ if p_value >= 0.001:
 else:
     print("✅ Statistical validation passed")
 '
-
