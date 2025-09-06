@@ -173,5 +173,3 @@ else:
     print("✅ Statistical validation passed")
 '
 
-# Remaining jobs (package-test, documentation, release-check) can similarly be fixed
-# by converting all python -c "..." blocks to single-quoted multi-line strings as shown above
