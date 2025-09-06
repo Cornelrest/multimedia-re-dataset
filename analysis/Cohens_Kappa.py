@@ -1,4 +1,4 @@
-#language=Python, caption=Cohen's Kappa Implementation, label=lst:kappa]
+#language=Python, caption=Cohens Kappa Implementation, label=lst:kappa]
 def calculate_cohens_kappa(expert1_reqs, expert2_reqs, all_possible_reqs):
     """
     Calculate inter-rater reliability for requirement identification
@@ -16,7 +16,7 @@ def calculate_cohens_kappa(expert1_reqs, expert2_reqs, all_possible_reqs):
     expected_agreement = (p1_positive * p2_positive + 
                          (1-p1_positive) * (1-p2_positive))
     
-    # Cohen's Kappa
+    # Cohens Kappa
     kappa = (observed_agreement - expected_agreement) / (1 - expected_agreement)
     return kappa
 
