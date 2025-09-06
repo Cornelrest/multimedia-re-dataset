@@ -73,3 +73,105 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
+  dataset-integrity:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate dataset with different seeds
+        run: |
+          python -c '
+from dataset_generator import RequirementsDatasetGenerator
+import numpy as np
+
+np.random.seed(42)
+gen1 = RequirementsDatasetGenerator()
+gen1.generate_complete_dataset("test_data_1")
+
+np.random.seed(42)
+gen2 = RequirementsDatasetGenerator()
+gen2.generate_complete_dataset("test_data_2")
+'
+
+      - name: Check reproducibility
+        run: |
+          python -c '
+import pandas as pd
+import numpy as np
+
+df1 = pd.read_csv("test_data_1/participants.csv")
+df2 = pd.read_csv("test_data_2/participants.csv")
+
+if df1.equals(df2):
+    print("✅ Dataset generation is reproducible")
+else:
+    print("❌ Dataset generation is not reproducible")
+    exit(1)
+'
+
+  statistical-validation:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install scipy pandas numpy
+
+      - name: Generate and validate statistical properties
+        run: |
+          python -c '
+from dataset_generator import RequirementsDatasetGenerator
+import pandas as pd
+from scipy import stats
+import numpy as np
+
+gen = RequirementsDatasetGenerator()
+gen.generate_complete_dataset()
+
+results = pd.read_csv("generated_data/participant_results.csv")
+control = results[results["group_assignment"] == "Control"]
+treatment = results[results["group_assignment"] == "Treatment"]
+
+control_mean = control["requirements_identified"].mean()
+treatment_mean = treatment["requirements_identified"].mean()
+improvement = ((treatment_mean - control_mean) / control_mean) * 100
+
+print(f"Control mean: {control_mean:.1f}")
+print(f"Treatment mean: {treatment_mean:.1f}")
+print(f"Improvement: {improvement:.1f}%")
+
+t_stat, p_value = stats.ttest_ind(treatment["requirements_identified"],
+                                  control["requirements_identified"])
+print(f"T-statistic: {t_stat:.3f}, p-value: {p_value:.6f}")
+
+if p_value >= 0.001:
+    print("❌ Results not statistically significant at p < 0.001")
+    exit(1)
+else:
+    print("✅ Statistical validation passed")
+'
+
+# Remaining jobs (package-test, documentation, release-check) can similarly be fixed
+# by converting all python -c "..." blocks to single-quoted multi-line strings as shown above
