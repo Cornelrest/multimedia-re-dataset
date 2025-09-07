@@ -71,7 +71,24 @@ jobs:
         run: python dataset_generator.py
 
       - name: Validate generated dataset
-        run: python validate_dataset.py --data-dir generated_data
+        run: |
+          python -c "
+          import os
+          import subprocess
+          
+          # Check what files exist in current directory
+          files = [f for f in os.listdir('.') if f.endswith('.csv')]
+          print('CSV files in current directory:', files)
+          
+          # Try to run validation with current directory or generated_data
+          if os.path.exists('generated_data'):
+              subprocess.run(['python', 'validate_dataset.py', '--data-dir', 'generated_data'], check=True)
+          elif files:
+              subprocess.run(['python', 'validate_dataset.py', '--data-dir', '.'], check=True)
+          else:
+              print('No CSV files found to validate')
+              exit(1)
+          "
 
       - name: Run unit tests
         run: pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
@@ -107,37 +124,104 @@ jobs:
           pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed"
           pip install -r requirements.txt
 
-      - name: Generate dataset with different seeds
+      - name: Create test script for reproducibility
         run: |
-          python -c "
+          cat > test_reproducibility.py << 'EOF'
           import os
-          from dataset_generator import MultimediaREDatasetGenerator
+          import shutil
           import numpy as np
+          from dataset_generator import MultimediaREDatasetGenerator
           
-          os.makedirs('test_data_1', exist_ok=True)
-          os.makedirs('test_data_2', exist_ok=True)
+          def cleanup_directory(path):
+              if os.path.exists(path):
+                  shutil.rmtree(path)
           
+          def copy_generated_files(source_dir, target_dir):
+              os.makedirs(target_dir, exist_ok=True)
+              
+              # Check multiple possible source locations
+              source_locations = [source_dir, '.', 'generated_data']
+              
+              for source in source_locations:
+                  if os.path.exists(source):
+                      csv_files = [f for f in os.listdir(source) if f.endswith('.csv')]
+                      json_files = [f for f in os.listdir(source) if f.endswith('.json')]
+                      
+                      if csv_files or json_files:
+                          for file in csv_files + json_files:
+                              src_path = os.path.join(source, file)
+                              dst_path = os.path.join(target_dir, file)
+                              shutil.copy2(src_path, dst_path)
+                          break
+          
+          # Clean up any existing data
+          cleanup_directory('test_data_1')
+          cleanup_directory('test_data_2')
+          cleanup_directory('generated_data')
+          
+          # Generate first dataset
+          print("Generating first dataset...")
           np.random.seed(42)
           gen1 = MultimediaREDatasetGenerator()
-          gen1.generate_complete_dataset(output_dir='test_data_1')
+          gen1.generate_complete_dataset()
+          copy_generated_files('.', 'test_data_1')
           
+          # Clean up for second generation
+          cleanup_directory('generated_data')
+          
+          # Generate second dataset  
+          print("Generating second dataset...")
           np.random.seed(42)
           gen2 = MultimediaREDatasetGenerator()
-          gen2.generate_complete_dataset(output_dir='test_data_2')
-          "
+          gen2.generate_complete_dataset()
+          copy_generated_files('.', 'test_data_2')
+          
+          print("Datasets generated successfully")
+          EOF
+
+      - name: Generate datasets with different seeds
+        run: python test_reproducibility.py
 
       - name: Check reproducibility
         run: |
           python -c "
           import pandas as pd
+          import os
           
-          df1 = pd.read_csv('test_data_1/evaluation_results.csv')
-          df2 = pd.read_csv('test_data_2/evaluation_results.csv')
+          # Find evaluation results files
+          eval_file_1 = None
+          eval_file_2 = None
+          
+          for file in os.listdir('test_data_1'):
+              if 'evaluation' in file and file.endswith('.csv'):
+                  eval_file_1 = os.path.join('test_data_1', file)
+                  break
+          
+          for file in os.listdir('test_data_2'):
+              if 'evaluation' in file and file.endswith('.csv'):
+                  eval_file_2 = os.path.join('test_data_2', file)
+                  break
+          
+          if not eval_file_1 or not eval_file_2:
+              print('❌ Could not find evaluation results files')
+              print('Files in test_data_1:', os.listdir('test_data_1'))
+              print('Files in test_data_2:', os.listdir('test_data_2'))
+              exit(1)
+          
+          df1 = pd.read_csv(eval_file_1)
+          df2 = pd.read_csv(eval_file_2)
           
           if df1.equals(df2):
               print('✅ Dataset generation is reproducible')
           else:
               print('❌ Dataset generation is not reproducible')
+              print('Checking for differences...')
+              if df1.shape != df2.shape:
+                  print(f'Shape mismatch: {df1.shape} vs {df2.shape}')
+              else:
+                  for col in df1.columns:
+                      if not df1[col].equals(df2[col]):
+                          print(f'Difference found in column: {col}')
               exit(1)
           "
 
@@ -165,54 +249,87 @@ jobs:
           pip install -r requirements.txt
           pip install pandas numpy scipy
 
-      - name: Generate and validate statistical properties
+      - name: Create statistical validation script
         run: |
-          python -c "
+          cat > validate_statistics.py << 'EOF'
           import os
           import pandas as pd
           from scipy import stats
           from dataset_generator import MultimediaREDatasetGenerator
+          import shutil
           
-          # Ensure we're in a clean state
+          # Clean up any existing generated data
           if os.path.exists('generated_data'):
-              import shutil
               shutil.rmtree('generated_data')
           
-          # Generate dataset (it will create its own output directory)
+          # Generate dataset
+          print("Generating dataset for statistical validation...")
           gen = MultimediaREDatasetGenerator()
           gen.generate_complete_dataset()
           
-          # Find the generated CSV file
+          # Find the evaluation results CSV file
           csv_file = None
-          if os.path.exists('generated_data/evaluation_results.csv'):
-              csv_file = 'generated_data/evaluation_results.csv'
-          elif os.path.exists('evaluation_results.csv'):
-              csv_file = 'evaluation_results.csv'
-          else:
-              # Look for any CSV files in current directory
+          possible_locations = ['.', 'generated_data']
+          possible_names = ['evaluation_results.csv', 'evaluation.csv']
+          
+          for location in possible_locations:
+              if os.path.exists(location):
+                  for name in possible_names:
+                      full_path = os.path.join(location, name)
+                      if os.path.exists(full_path):
+                          csv_file = full_path
+                          break
+                  if csv_file:
+                      break
+          
+          if not csv_file:
+              # Look for any CSV files with 'eval' in the name
               import glob
-              csv_files = glob.glob('*.csv')
-              if csv_files:
-                  csv_file = csv_files[0]
+              for location in possible_locations:
+                  if os.path.exists(location):
+                      pattern = os.path.join(location, '*eval*.csv')
+                      matches = glob.glob(pattern)
+                      if matches:
+                          csv_file = matches[0]
+                          break
           
           if not csv_file:
               print('❌ No evaluation results CSV file found')
+              print('Current directory files:', [f for f in os.listdir('.') if f.endswith('.csv')])
+              if os.path.exists('generated_data'):
+                  print('Generated_data files:', [f for f in os.listdir('generated_data') if f.endswith('.csv')])
               exit(1)
+          
+          print(f'Reading evaluation results from: {csv_file}')
           
           # Read evaluation results
           results = pd.read_csv(csv_file)
+          print(f'Columns found: {list(results.columns)}')
           
-          # Check if required columns exist
-          if 'group_assignment' not in results.columns or 'requirements_identified' not in results.columns:
+          # Check if required columns exist - handle both 'group' and 'group_assignment'
+          group_col = None
+          if 'group_assignment' in results.columns:
+              group_col = 'group_assignment'
+          elif 'group' in results.columns:
+              group_col = 'group'
+          
+          if group_col is None or 'requirements_identified' not in results.columns:
               print('❌ Required columns not found in CSV')
               print('Available columns:', list(results.columns))
+              print('Expected: group_assignment (or group) and requirements_identified')
               exit(1)
           
-          control = results[results['group_assignment'] == 'Control']
-          treatment = results[results['group_assignment'] == 'Treatment']
+          print(f'Using group column: {group_col}')
+          print(f'Unique values in {group_col}: {results[group_col].unique()}')
+          
+          control = results[results[group_col] == 'Control']
+          treatment = results[results[group_col] == 'Treatment']
           
           if len(control) == 0 or len(treatment) == 0:
               print('❌ Missing control or treatment groups')
+              print(f'Control group size: {len(control)}')
+              print(f'Treatment group size: {len(treatment)}')
+              print(f'Unique values in {group_col}: {results[group_col].unique()}')
               exit(1)
           
           control_mean = control['requirements_identified'].mean()
@@ -234,4 +351,7 @@ jobs:
               exit(1)
           else:
               print('✅ Statistical validation passed')
-          "
+          EOF
+
+      - name: Run statistical validation
+        run: python validate_statistics.py
