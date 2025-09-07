@@ -1,4 +1,3 @@
-```python
 #!/usr/bin/env python3
 """
 Download required ML models for multimedia processing
