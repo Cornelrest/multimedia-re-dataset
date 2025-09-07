@@ -14,12 +14,15 @@ import json
 from typing import Dict, List, Tuple, Any
 from scipy import stats
 import warnings
+
 warnings.filterwarnings("ignore")
+
 
 class DatasetValidator:
     """
     Comprehensive validator for the Requirements Engineering dataset.
     """
+
     def __init__(self, data_dir: str = "generated_data"):
         self.data_dir = data_dir
         self.validation_results = {}
@@ -84,7 +87,9 @@ class DatasetValidator:
         """Validate participants.csv structure and content."""
         print("Validating participants data...")
         try:
-            participants = pd.read_csv(os.path.join(self.data_dir, "participants.csv"), encoding='utf-8')
+            participants = pd.read_csv(
+                os.path.join(self.data_dir, "participants.csv"), encoding="utf-8"
+            )
         except Exception as e:
             self.errors.append(f"Cannot load participants.csv: {e}")
             return False
@@ -167,7 +172,8 @@ class DatasetValidator:
         print("Validating ground truth requirements...")
         try:
             requirements = pd.read_csv(
-                os.path.join(self.data_dir, "ground_truth_requirements.csv"), encoding='utf-8'
+                os.path.join(self.data_dir, "ground_truth_requirements.csv"),
+                encoding="utf-8",
             )
         except Exception as e:
             self.errors.append(f"Cannot load ground_truth_requirements.csv: {e}")
@@ -252,7 +258,7 @@ class DatasetValidator:
         print("Validating participant results...")
         try:
             results = pd.read_csv(
-                os.path.join(self.data_dir, "participant_results.csv"), encoding='utf-8'
+                os.path.join(self.data_dir, "participant_results.csv"), encoding="utf-8"
             )
         except Exception as e:
             self.errors.append(f"Cannot load participant_results.csv: {e}")
@@ -369,7 +375,7 @@ class DatasetValidator:
         all_passed = True
         for file in multimedia_files:
             try:
-                df = pd.read_csv(os.path.join(self.data_dir, file), encoding='utf-8')
+                df = pd.read_csv(os.path.join(self.data_dir, file), encoding="utf-8")
                 # Check if all participant_ids are from treatment group
                 if "participant_id" in df.columns:
                     unique_participants = df["participant_id"].nunique()
@@ -407,7 +413,7 @@ class DatasetValidator:
         print("Validating statistical integrity...")
         try:
             results = pd.read_csv(
-                os.path.join(self.data_dir, "participant_results.csv"), encoding='utf-8'
+                os.path.join(self.data_dir, "participant_results.csv"), encoding="utf-8"
             )
         except Exception as e:
             self.errors.append(
@@ -488,13 +494,17 @@ class DatasetValidator:
         all_passed = True
         for file in metadata_files:
             try:
-                with open(os.path.join(self.data_dir, file), "r", encoding='utf-8') as f:
+                with open(
+                    os.path.join(self.data_dir, file), "r", encoding="utf-8"
+                ) as f:
                     data = json.load(f)
                 if not data:
                     self.errors.append(f"{file} is empty")
                     all_passed = False
                 else:
-                    print(f"Success: {file}: Valid JSON with {len(data)} top-level keys")
+                    print(
+                        f"Success: {file}: Valid JSON with {len(data)} top-level keys"
+                    )
             except json.JSONDecodeError as e:
                 self.errors.append(f"{file}: Invalid JSON - {e}")
                 all_passed = False
@@ -539,7 +549,9 @@ class DatasetValidator:
         print("VALIDATION SUMMARY")
         print("=" * 60)
         overall_passed = passed_count == total_count and len(self.errors) == 0
-        print(f"Overall Status: {'Success: PASSED' if overall_passed else 'Error: FAILED'}")
+        print(
+            f"Overall Status: {'Success: PASSED' if overall_passed else 'Error: FAILED'}"
+        )
         print(f"Validation Steps: {passed_count}/{total_count} passed")
         print(f"Errors: {len(self.errors)}")
         print(f"Warnings: {len(self.warnings)}")
@@ -562,14 +574,16 @@ class DatasetValidator:
             "detailed_results": self.validation_results,
         }
         report_file = os.path.join(self.data_dir, "validation_report.json")
-        with open(report_file, "w", encoding='utf-8') as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(validation_report, f, indent=2)
         print(f"\nValidation report saved to: {report_file}")
         return validation_report
 
+
 def main():
     """Main function to run validation."""
     import argparse
+
     parser = argparse.ArgumentParser(
         description="Validate Requirements Engineering Dataset"
     )
@@ -590,6 +604,7 @@ def main():
     # Exit with appropriate code
     exit_code = 0 if report["overall_passed"] else 1
     exit(exit_code)
+
 
 if __name__ == "__main__":
     main()
