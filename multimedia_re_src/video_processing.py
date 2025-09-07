@@ -1,4 +1,10 @@
+import cv2
+import numpy as np
+import logging
+from typing import Dict, Any
+
 # Listing: Video Quality Control Implementation (lst:video-quality)
+
 def process_video_with_quality_control(video_file: str) -> Dict[str, Any]:
     """
     Process video with built-in quality assessment
