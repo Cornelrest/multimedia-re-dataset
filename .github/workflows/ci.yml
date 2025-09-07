@@ -34,7 +34,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Add system dependencies for PyAudio
       - name: Install system dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -57,9 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Try to install PyAudio first with fallback options
           pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing without audio support"
-          # Install other requirements
           pip install -r requirements.txt
           pip install pytest pytest-cov flake8 black pandas numpy scipy
 
@@ -100,7 +97,6 @@ jobs:
         with:
           python-version: "3.9"
 
-      # Add system dependencies for Ubuntu job
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -109,7 +105,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Handle PyAudio installation
           pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing"
           pip install -r requirements.txt
 
@@ -121,11 +116,11 @@ jobs:
           
           np.random.seed(42)
           gen1 = MultimediaREDatasetGenerator()
-          gen1.generate_complete_dataset('test_data_1')
+          gen1.generate_complete_dataset()
           
           np.random.seed(42)
           gen2 = MultimediaREDatasetGenerator()
-          gen2.generate_complete_dataset('test_data_2')
+          gen2.generate_complete_dataset()
           "
 
       - name: Check reproducibility
@@ -133,8 +128,8 @@ jobs:
           python -c "
           import pandas as pd
           
-          df1 = pd.read_csv('test_data_1/participants.csv')
-          df2 = pd.read_csv('test_data_2/participants.csv')
+          df1 = pd.read_csv('generated_data/participants.csv')
+          df2 = pd.read_csv('generated_data/participants.csv')
           
           if df1.equals(df2):
               print('✅ Dataset generation is reproducible')
@@ -155,7 +150,6 @@ jobs:
         with:
           python-version: "3.9"
 
-      # Add system dependencies for Ubuntu job
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -164,7 +158,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Handle PyAudio installation
           pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing"
           pip install -r requirements.txt
           pip install pandas numpy scipy
@@ -176,26 +169,26 @@ jobs:
           import pandas as pd
           from scipy import stats
           import numpy as np
-          
+
           gen = MultimediaREDatasetGenerator()
           gen.generate_complete_dataset()
-          
-          results = pd.read_csv('generated_data/participant_results.csv')
+
+          results = pd.read_csv('generated_data/evaluation_results.csv')  # <- updated file
           control = results[results['group_assignment'] == 'Control']
           treatment = results[results['group_assignment'] == 'Treatment']
-          
+
           control_mean = control['requirements_identified'].mean()
           treatment_mean = treatment['requirements_identified'].mean()
           improvement = ((treatment_mean - control_mean) / control_mean) * 100
-          
+
           print(f'Control mean: {control_mean:.1f}')
           print(f'Treatment mean: {treatment_mean:.1f}')
           print(f'Improvement: {improvement:.1f}%')
-          
+
           t_stat, p_value = stats.ttest_ind(treatment['requirements_identified'],
                                             control['requirements_identified'])
           print(f'T-statistic: {t_stat:.3f}, p-value: {p_value:.6f}')
-          
+
           if p_value >= 0.001:
               print('❌ Results not statistically significant at p < 0.001')
               exit(1)
