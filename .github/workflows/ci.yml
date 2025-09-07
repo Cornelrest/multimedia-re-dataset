@@ -173,17 +173,47 @@ jobs:
           from scipy import stats
           from dataset_generator import MultimediaREDatasetGenerator
           
-          # Ensure output directory
-          os.makedirs('generated_data', exist_ok=True)
+          # Ensure we're in a clean state
+          if os.path.exists('generated_data'):
+              import shutil
+              shutil.rmtree('generated_data')
           
-          # Generate dataset in the correct folder
+          # Generate dataset (it will create its own output directory)
           gen = MultimediaREDatasetGenerator()
-          gen.generate_complete_dataset(output_dir='generated_data')
+          gen.generate_complete_dataset()
           
-          # Read evaluation results from correct path
-          results = pd.read_csv('generated_data/evaluation_results.csv')
+          # Find the generated CSV file
+          csv_file = None
+          if os.path.exists('generated_data/evaluation_results.csv'):
+              csv_file = 'generated_data/evaluation_results.csv'
+          elif os.path.exists('evaluation_results.csv'):
+              csv_file = 'evaluation_results.csv'
+          else:
+              # Look for any CSV files in current directory
+              import glob
+              csv_files = glob.glob('*.csv')
+              if csv_files:
+                  csv_file = csv_files[0]
+          
+          if not csv_file:
+              print('❌ No evaluation results CSV file found')
+              exit(1)
+          
+          # Read evaluation results
+          results = pd.read_csv(csv_file)
+          
+          # Check if required columns exist
+          if 'group_assignment' not in results.columns or 'requirements_identified' not in results.columns:
+              print('❌ Required columns not found in CSV')
+              print('Available columns:', list(results.columns))
+              exit(1)
+          
           control = results[results['group_assignment'] == 'Control']
           treatment = results[results['group_assignment'] == 'Treatment']
+          
+          if len(control) == 0 or len(treatment) == 0:
+              print('❌ Missing control or treatment groups')
+              exit(1)
           
           control_mean = control['requirements_identified'].mean()
           treatment_mean = treatment['requirements_identified'].mean()
