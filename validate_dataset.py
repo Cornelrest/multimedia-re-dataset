@@ -110,7 +110,9 @@ class DatasetValidator:
             "technical_background",
             "elearning_experience",
         ]
-        missing_columns = [col for col in required_columns if col not in participants.columns]
+        missing_columns = [
+            col for col in required_columns if col not in participants.columns
+        ]
         if missing_columns:
             issues.append(f"Missing columns: {missing_columns}")
         # Check group distribution
@@ -206,7 +208,9 @@ class DatasetValidator:
             "description",
             "expert_confidence",
         ]
-        missing_columns = [col for col in required_columns if col not in requirements.columns]
+        missing_columns = [
+            col for col in required_columns if col not in requirements.columns
+        ]
         if missing_columns:
             issues.append(f"Missing columns: {missing_columns}")
         # Check data ranges
@@ -234,7 +238,9 @@ class DatasetValidator:
             "passed": len(issues) == 0,
             "total_requirements": len(requirements),
             "functional_count": (
-                type_counts.get("functional", 0) if "type" in requirements.columns else 0
+                type_counts.get("functional", 0)
+                if "type" in requirements.columns
+                else 0
             ),
             "non_functional_count": (
                 type_counts.get("non-functional", 0)
@@ -274,7 +280,9 @@ class DatasetValidator:
             "satisfaction_score",
             "session_duration",
         ]
-        missing_columns = [col for col in required_columns if col not in results.columns]
+        missing_columns = [
+            col for col in required_columns if col not in results.columns
+        ]
         if missing_columns:
             issues.append(f"Missing columns: {missing_columns}")
         # Statistical validation
@@ -289,7 +297,9 @@ class DatasetValidator:
                 treatment_mean = treatment_group["requirements_identified"].mean()
                 # Allow 10% tolerance
                 control_tolerance = (
-                    abs(control_mean - self.expected_values["control_mean_requirements"])
+                    abs(
+                        control_mean - self.expected_values["control_mean_requirements"]
+                    )
                     / self.expected_values["control_mean_requirements"]
                 )
                 treatment_tolerance = (
@@ -308,10 +318,13 @@ class DatasetValidator:
                         f"Treatment group mean requirements ({treatment_mean:.1f}) differs significantly from expected ({self.expected_values['treatment_mean_requirements']})"
                     )
                 # Check improvement percentage
-                actual_improvement = ((treatment_mean - control_mean) / control_mean) * 100
+                actual_improvement = (
+                    (treatment_mean - control_mean) / control_mean
+                ) * 100
                 expected_improvement = self.expected_values["improvement_percentage"]
                 improvement_tolerance = (
-                    abs(actual_improvement - expected_improvement) / expected_improvement
+                    abs(actual_improvement - expected_improvement)
+                    / expected_improvement
                 )
                 if improvement_tolerance > 0.1:
                     self.warnings.append(
@@ -361,7 +374,11 @@ class DatasetValidator:
                             f"{file}: More participants than expected treatment group size"
                         )
                 # Check confidence scores are in valid range
-                for col in ["quality_score", "transcription_accuracy", "ocr_confidence"]:
+                for col in [
+                    "quality_score",
+                    "transcription_accuracy",
+                    "ocr_confidence",
+                ]:
                     if col in df.columns and not df[col].isna().all():
                         conf_min, conf_max = df[col].min(), df[col].max()
                         if conf_min < 0 or conf_max > 1:
@@ -391,9 +408,7 @@ class DatasetValidator:
             return False
         issues = []
         if "group" not in results.columns:
-            issues.append(
-                "Cannot perform statistical validation: missing group column"
-            )
+            issues.append("Cannot perform statistical validation: missing group column")
             return False
         control_group = results[results["group"] == "control"]
         treatment_group = results[results["group"] == "treatment"]
@@ -463,13 +478,17 @@ class DatasetValidator:
         all_passed = True
         for file in metadata_files:
             try:
-                with open(os.path.join(self.data_dir, file), "r", encoding="utf-8") as f:
+                with open(
+                    os.path.join(self.data_dir, file), "r", encoding="utf-8"
+                ) as f:
                     data = json.load(f)
                 if not data:
                     self.errors.append(f"{file} is empty")
                     all_passed = False
                 else:
-                    print(f"Success: {file}: Valid JSON with {len(data)} top-level keys")
+                    print(
+                        f"Success: {file}: Valid JSON with {len(data)} top-level keys"
+                    )
             except json.JSONDecodeError as e:
                 self.errors.append(f"{file}: Invalid JSON - {e}")
                 all_passed = False
@@ -505,14 +524,18 @@ class DatasetValidator:
                 if validation_func():
                     passed_count += 1
             except Exception as e:
-                self.errors.append(f"Validation step '{step_name}' failed with exception: {e}")
+                self.errors.append(
+                    f"Validation step '{step_name}' failed with exception: {e}"
+                )
                 print(f"Error: {step_name}: Exception occurred")
         print()
         print("=" * 60)
         print("VALIDATION SUMMARY")
         print("=" * 60)
         overall_passed = passed_count == total_count and len(self.errors) == 0
-        print(f"Overall Status: {'Success: PASSED' if overall_passed else 'Error: FAILED'}")
+        print(
+            f"Overall Status: {'Success: PASSED' if overall_passed else 'Error: FAILED'}"
+        )
         print(f"Validation Steps: {passed_count}/{total_count} passed")
         print(f"Errors: {len(self.errors)}")
         print(f"Warnings: {len(self.warnings)}")
@@ -545,7 +568,9 @@ def main():
     """Main function to run validation."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Validate Requirements Engineering Dataset")
+    parser = argparse.ArgumentParser(
+        description="Validate Requirements Engineering Dataset"
+    )
     parser.add_argument(
         "--data-dir",
         default="generated_data",
