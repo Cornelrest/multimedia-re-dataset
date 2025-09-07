@@ -253,8 +253,12 @@ class MultimediaREDatasetGenerator:
                         "complexity": np.random.choice(
                             ["Simple", "Medium", "Complex"], p=[0.4, 0.4, 0.2]
                         ),
-                        "identified_by_control": np.random.choice([0, 1], p=[0.29, 0.71]),
-                        "identified_by_treatment": np.random.choice([0, 1], p=[0.08, 0.92]),
+                        "identified_by_control": np.random.choice(
+                            [0, 1], p=[0.29, 0.71]
+                        ),
+                        "identified_by_treatment": np.random.choice(
+                            [0, 1], p=[0.08, 0.92]
+                        ),
                         "expert_confidence": np.random.uniform(0.8, 1.0),
                         "effort_estimate": np.random.randint(1, 8),
                     }
@@ -291,8 +295,12 @@ class MultimediaREDatasetGenerator:
                         "complexity": np.random.choice(
                             ["Simple", "Medium", "Complex"], p=[0.2, 0.5, 0.3]
                         ),
-                        "identified_by_control": np.random.choice([0, 1], p=[0.52, 0.48]),
-                        "identified_by_treatment": np.random.choice([0, 1], p=[0.15, 0.85]),
+                        "identified_by_control": np.random.choice(
+                            [0, 1], p=[0.52, 0.48]
+                        ),
+                        "identified_by_treatment": np.random.choice(
+                            [0, 1], p=[0.15, 0.85]
+                        ),
                         "expert_confidence": np.random.uniform(0.7, 0.95),
                         "effort_estimate": np.random.randint(2, 12),
                     }
