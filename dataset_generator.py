@@ -216,90 +216,90 @@ class MultimediaREDatasetGenerator:
         return pd.DataFrame(sessions)
 
     def generate_ground_truth_requirements(self):
-    """Generate expert-validated ground truth requirements"""
-    logger.info("Generating ground truth requirements...")
+        """Generate expert-validated ground truth requirements"""
+        logger.info("Generating ground truth requirements...")
 
-    requirements = []
-    req_id = 1
+        requirements = []
+        req_id = 1
 
-    # Functional requirements (73 total)
-    functional_categories = [
-        "User Management",
-        "Course Management",
-        "Assessment",
-        "Communication",
-        "Content Management",
-        "Reporting",
-        "Navigation",
-        "Search",
-    ]
+        # Functional requirements (73 total)
+        functional_categories = [
+            "User Management",
+            "Course Management",
+            "Assessment",
+            "Communication",
+            "Content Management",
+            "Reporting",
+            "Navigation",
+            "Search",
+        ]
 
-    num_func_categories = len(functional_categories)
-    base_func = 73 // num_func_categories
-    remainder_func = 73 % num_func_categories
+        num_func_categories = len(functional_categories)
+        base_func = 73 // num_func_categories
+        remainder_func = 73 % num_func_categories
 
-    for idx, category in enumerate(functional_categories):
-        num_reqs = base_func + (1 if idx < remainder_func else 0)
-        for i in range(num_reqs):
-            requirements.append(
-                {
-                    "requirement_id": f"FR_{req_id:03d}",
-                    "type": "functional",
-                    "category": category,
-                    "description": f"System shall provide {category.lower()} functionality for requirement {req_id}",
-                    "priority": np.random.choice(
-                        ["High", "Medium", "Low"], p=[0.3, 0.5, 0.2]
-                    ),
-                    "complexity": np.random.choice(
-                        ["Simple", "Medium", "Complex"], p=[0.4, 0.4, 0.2]
-                    ),
-                    "identified_by_control": np.random.choice([0, 1], p=[0.29, 0.71]),
-                    "identified_by_treatment": np.random.choice([0, 1], p=[0.08, 0.92]),
-                    "expert_confidence": np.random.uniform(0.8, 1.0),
-                    "effort_estimate": np.random.randint(1, 8),
-                }
-            )
-            req_id += 1
+        for idx, category in enumerate(functional_categories):
+            num_reqs = base_func + (1 if idx < remainder_func else 0)
+            for i in range(num_reqs):
+                requirements.append(
+                    {
+                        "requirement_id": f"FR_{req_id:03d}",
+                        "type": "functional",
+                        "category": category,
+                        "description": f"System shall provide {category.lower()} functionality for requirement {req_id}",
+                        "priority": np.random.choice(
+                            ["High", "Medium", "Low"], p=[0.3, 0.5, 0.2]
+                        ),
+                        "complexity": np.random.choice(
+                            ["Simple", "Medium", "Complex"], p=[0.4, 0.4, 0.2]
+                        ),
+                        "identified_by_control": np.random.choice([0, 1], p=[0.29, 0.71]),
+                        "identified_by_treatment": np.random.choice([0, 1], p=[0.08, 0.92]),
+                        "expert_confidence": np.random.uniform(0.8, 1.0),
+                        "effort_estimate": np.random.randint(1, 8),
+                    }
+                )
+                req_id += 1
 
-    # Non-functional requirements (54 total)
-    nf_categories = [
-        "Performance",
-        "Usability",
-        "Security",
-        "Reliability",
-        "Accessibility",
-        "Compatibility",
-        "Maintainability",
-    ]
+        # Non-functional requirements (54 total)
+        nf_categories = [
+            "Performance",
+            "Usability",
+            "Security",
+            "Reliability",
+            "Accessibility",
+            "Compatibility",
+            "Maintainability",
+        ]
 
-    num_nf_categories = len(nf_categories)
-    base_nf = 54 // num_nf_categories
-    remainder_nf = 54 % num_nf_categories
+        num_nf_categories = len(nf_categories)
+        base_nf = 54 // num_nf_categories
+        remainder_nf = 54 % num_nf_categories
 
-    for idx, category in enumerate(nf_categories):
-        num_reqs = base_nf + (1 if idx < remainder_nf else 0)
-        for i in range(num_reqs):
-            requirements.append(
-                {
-                    "requirement_id": f"NFR_{req_id:03d}",
-                    "type": "non-functional",
-                    "category": category,
-                    "description": f"System shall meet {category.lower()} requirements for aspect {req_id}",
-                    "priority": np.random.choice(
-                        ["High", "Medium", "Low"], p=[0.4, 0.4, 0.2]
-                    ),
-                    "complexity": np.random.choice(
-                        ["Simple", "Medium", "Complex"], p=[0.2, 0.5, 0.3]
-                    ),
-                    "identified_by_control": np.random.choice([0, 1], p=[0.52, 0.48]),
-                    "identified_by_treatment": np.random.choice([0, 1], p=[0.15, 0.85]),
-                    "expert_confidence": np.random.uniform(0.7, 0.95),
-                    "effort_estimate": np.random.randint(2, 12),
-                }
-            )
-            req_id += 1
+        for idx, category in enumerate(nf_categories):
+            num_reqs = base_nf + (1 if idx < remainder_nf else 0)
+            for i in range(num_reqs):
+                requirements.append(
+                    {
+                        "requirement_id": f"NFR_{req_id:03d}",
+                        "type": "non-functional",
+                        "category": category,
+                        "description": f"System shall meet {category.lower()} requirements for aspect {req_id}",
+                        "priority": np.random.choice(
+                            ["High", "Medium", "Low"], p=[0.4, 0.4, 0.2]
+                        ),
+                        "complexity": np.random.choice(
+                            ["Simple", "Medium", "Complex"], p=[0.2, 0.5, 0.3]
+                        ),
+                        "identified_by_control": np.random.choice([0, 1], p=[0.52, 0.48]),
+                        "identified_by_treatment": np.random.choice([0, 1], p=[0.15, 0.85]),
+                        "expert_confidence": np.random.uniform(0.7, 0.95),
+                        "effort_estimate": np.random.randint(2, 12),
+                    }
+                )
+                req_id += 1
 
-    return pd.DataFrame(requirements)
+        return pd.DataFrame(requirements)
 
     def generate_evaluation_results(self, demographics_df):
         """Generate evaluation metrics for both groups"""
