@@ -41,11 +41,7 @@ torchvision==0.15.2
 # Audio processing
 librosa==0.10.1
 SpeechRecognition==3.10.0
-<<<<<<< HEAD
 # PyAudio==0.2.11  # Uncomment if needed for audio features
-=======
-# PyAudio==0.2.11
->>>>>>> 973b1f1105239f0ae7cf857b8728483dd9f3ad59
 
 # Computer Vision
 opencv-python==4.8.0.74
