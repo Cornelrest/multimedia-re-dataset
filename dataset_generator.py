@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
 Multimedia Requirements Engineering Dataset Generator
-
 This script generates the complete synthetic dataset that reproduces
 the statistical findings from the research paper.
-
 Usage:
     python generate_dataset.py [--output-dir OUTPUT_DIR] [--seed SEED]
-
 Author: Cornelius Chimuanya Okechukwu
 Institution: Tomas Bata University in Zlin
 """
-
 import pandas as pd
 import numpy as np
 import json
@@ -21,24 +17,25 @@ import random
 from pathlib import Path
 import logging
 
-# Configure logging
+# Configure logging with UTF-8 encoding
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler('dataset_generator.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
-
 class MultimediaREDatasetGenerator:
     """Generate complete multimedia requirements engineering dataset"""
-
     def __init__(self, output_dir=".", seed=42):
         self.output_dir = Path(output_dir)
         self.seed = seed
         self.set_random_seeds()
-
         # Ensure output directory exists
         self.output_dir.mkdir(exist_ok=True)
-
         # Expected results from paper (for validation)
         self.expected_results = {
             "control": {
@@ -65,10 +62,8 @@ class MultimediaREDatasetGenerator:
     def generate_participants_demographics(self):
         """Generate participant demographics data"""
         logger.info("Generating participant demographics...")
-
         participants = []
         participant_id = 1
-
         # Generate 20 educators
         for i in range(20):
             participants.append(
@@ -100,7 +95,6 @@ class MultimediaREDatasetGenerator:
                 }
             )
             participant_id += 1
-
         # Generate 20 students
         for i in range(20):
             participants.append(
@@ -132,7 +126,6 @@ class MultimediaREDatasetGenerator:
                 }
             )
             participant_id += 1
-
         # Generate 20 administrators
         for i in range(20):
             participants.append(
@@ -164,31 +157,25 @@ class MultimediaREDatasetGenerator:
                 }
             )
             participant_id += 1
-
         # Ensure exactly 30 in each group
         df = pd.DataFrame(participants)
         df.loc[:29, "group"] = "control"
         df.loc[30:59, "group"] = "treatment"
-
         return df
 
     def generate_session_information(self, demographics_df):
         """Generate session information for each participant"""
         logger.info("Generating session information...")
-
         sessions = []
         base_date = datetime(2024, 3, 1)
-
         for _, participant in demographics_df.iterrows():
             participant_id = participant["participant_id"]
             group = participant["group"]
-
             # Session duration based on group
             if group == "control":
                 duration_minutes = np.random.normal(60, 8)  # Traditional interview
             else:
                 duration_minutes = np.random.normal(90, 12)  # Multimedia session
-
             sessions.append(
                 {
                     "participant_id": participant_id,
@@ -212,16 +199,13 @@ class MultimediaREDatasetGenerator:
                     "group": group,
                 }
             )
-
         return pd.DataFrame(sessions)
 
     def generate_ground_truth_requirements(self):
         """Generate expert-validated ground truth requirements"""
         logger.info("Generating ground truth requirements...")
-
         requirements = []
         req_id = 1
-
         # Functional requirements (73 total)
         functional_categories = [
             "User Management",
@@ -233,11 +217,9 @@ class MultimediaREDatasetGenerator:
             "Navigation",
             "Search",
         ]
-
         num_func_categories = len(functional_categories)
         base_func = 73 // num_func_categories
         remainder_func = 73 % num_func_categories
-
         for idx, category in enumerate(functional_categories):
             num_reqs = base_func + (1 if idx < remainder_func else 0)
             for i in range(num_reqs):
@@ -264,7 +246,6 @@ class MultimediaREDatasetGenerator:
                     }
                 )
                 req_id += 1
-
         # Non-functional requirements (54 total)
         nf_categories = [
             "Performance",
@@ -275,11 +256,9 @@ class MultimediaREDatasetGenerator:
             "Compatibility",
             "Maintainability",
         ]
-
         num_nf_categories = len(nf_categories)
         base_nf = 54 // num_nf_categories
         remainder_nf = 54 % num_nf_categories
-
         for idx, category in enumerate(nf_categories):
             num_reqs = base_nf + (1 if idx < remainder_nf else 0)
             for i in range(num_reqs):
@@ -306,21 +285,17 @@ class MultimediaREDatasetGenerator:
                     }
                 )
                 req_id += 1
-
         return pd.DataFrame(requirements)
 
     def generate_evaluation_results(self, demographics_df):
         """Generate evaluation metrics for both groups"""
         logger.info("Generating evaluation results...")
-
         results = []
-
         # Generate individual participant results
         for _, participant in demographics_df.iterrows():
             participant_id = participant["participant_id"]
             group = participant["group"]
             stats = self.expected_results[group]
-
             results.append(
                 {
                     "participant_id": participant_id,
@@ -363,23 +338,18 @@ class MultimediaREDatasetGenerator:
                     ),
                 }
             )
-
         return pd.DataFrame(results)
 
     def generate_multimedia_metadata(self, demographics_df):
         """Generate metadata for multimedia files"""
         logger.info("Generating multimedia metadata...")
-
         multimedia_files = []
-
         # Treatment group participants only
         treatment_participants = demographics_df[
             demographics_df["group"] == "treatment"
         ]
-
         for _, participant in treatment_participants.iterrows():
             participant_id = participant["participant_id"]
-
             # Audio file
             multimedia_files.append(
                 {
@@ -408,7 +378,6 @@ class MultimediaREDatasetGenerator:
                     "ocr_confidence": None,
                 }
             )
-
             # Video file
             multimedia_files.append(
                 {
@@ -438,7 +407,6 @@ class MultimediaREDatasetGenerator:
                     "ocr_confidence": None,
                 }
             )
-
             # Image files (3-6 per participant)
             num_images = np.random.randint(3, 7)
             for j in range(num_images):
@@ -470,7 +438,6 @@ class MultimediaREDatasetGenerator:
                         "attention_regions": None,
                     }
                 )
-
         return pd.DataFrame(multimedia_files)
 
     def generate_summary_statistics(
@@ -478,7 +445,6 @@ class MultimediaREDatasetGenerator:
     ):
         """Generate dataset summary statistics"""
         logger.info("Generating summary statistics...")
-
         summary_stats = {
             "dataset_info": {
                 "generation_date": datetime.now().isoformat(),
@@ -551,63 +517,52 @@ class MultimediaREDatasetGenerator:
                 * 100,
             },
         }
-
         return summary_stats
 
     def save_datasets(self, datasets, summary_stats):
         """Save all generated datasets to files"""
         logger.info("Saving datasets to files...")
-
         # Save CSV files
         for name, df in datasets.items():
             filename = f"{name}.csv"
             filepath = self.output_dir / filename
-            df.to_csv(filepath, index=False)
-            logger.info(f"✓ Saved {filename} ({len(df)} rows)")
-
+            df.to_csv(filepath, index=False, encoding='utf-8')
+            logger.info(f"Saved {filename} ({len(df)} rows)")
         # Save summary statistics
         summary_file = self.output_dir / "dataset_summary.json"
-        with open(summary_file, "w") as f:
+        with open(summary_file, "w", encoding='utf-8') as f:
             json.dump(summary_stats, f, indent=2)
-        logger.info(f"✓ Saved dataset_summary.json")
+        logger.info("Saved dataset_summary.json")
 
     def validate_generated_data(self, datasets):
         """Validate the generated data meets expected criteria"""
         logger.info("Validating generated data...")
-
         evaluation_df = datasets["evaluation_results"]
         ground_truth_df = datasets["ground_truth_requirements"]
-
         # Check group sizes
         control_size = len(evaluation_df[evaluation_df["group"] == "control"])
         treatment_size = len(evaluation_df[evaluation_df["group"] == "treatment"])
-
         assert (
             control_size == 30
         ), f"Expected 30 control participants, got {control_size}"
         assert (
             treatment_size == 30
         ), f"Expected 30 treatment participants, got {treatment_size}"
-
         # Check requirements counts
         functional_count = len(ground_truth_df[ground_truth_df["type"] == "functional"])
         nonfunctional_count = len(
             ground_truth_df[ground_truth_df["type"] == "non-functional"]
         )
-
         assert (
             functional_count == 73
         ), f"Expected 73 functional requirements, got {functional_count}"
         assert (
             nonfunctional_count == 54
         ), f"Expected 54 non-functional requirements, got {nonfunctional_count}"
-
         # Check statistical properties (within tolerance)
         control = evaluation_df[evaluation_df["group"] == "control"]
         treatment = evaluation_df[evaluation_df["group"] == "treatment"]
-
         tolerance = 0.2  # 20% tolerance for synthetic data
-
         for metric in [
             "requirements_identified",
             "precision",
@@ -617,40 +572,33 @@ class MultimediaREDatasetGenerator:
         ]:
             control_mean = control[metric].mean()
             treatment_mean = treatment[metric].mean()
-
             expected_control = self.expected_results["control"][metric][0]
             expected_treatment = self.expected_results["treatment"][metric][0]
-
             control_diff = abs(control_mean - expected_control) / expected_control
             treatment_diff = (
                 abs(treatment_mean - expected_treatment) / expected_treatment
             )
-
             if control_diff > tolerance:
                 logger.warning(
                     f"Control {metric} mean {control_mean:.3f} differs from expected {expected_control:.3f} by {control_diff:.1%}"
                 )
-
             if treatment_diff > tolerance:
                 logger.warning(
                     f"Treatment {metric} mean {treatment_mean:.3f} differs from expected {expected_treatment:.3f} by {treatment_diff:.1%}"
                 )
-
-        logger.info("✓ Data validation completed")
+        logger.info("Data validation completed")
 
     def generate_complete_dataset(self):
         """Generate the complete dataset"""
         logger.info("Starting dataset generation...")
         logger.info(f"Random seed: {self.seed}")
         logger.info(f"Output directory: {self.output_dir}")
-
         # Generate all components
         demographics_df = self.generate_participants_demographics()
         session_df = self.generate_session_information(demographics_df)
         ground_truth_df = self.generate_ground_truth_requirements()
         evaluation_df = self.generate_evaluation_results(demographics_df)
         multimedia_df = self.generate_multimedia_metadata(demographics_df)
-
         # Combine into datasets dictionary
         datasets = {
             "participants_demographics": demographics_df,
@@ -659,21 +607,16 @@ class MultimediaREDatasetGenerator:
             "evaluation_results": evaluation_df,
             "multimedia_metadata": multimedia_df,
         }
-
         # Generate summary statistics
         summary_stats = self.generate_summary_statistics(
             demographics_df, evaluation_df, ground_truth_df, multimedia_df
         )
-
         # Validate data
         self.validate_generated_data(datasets)
-
         # Save all datasets
         self.save_datasets(datasets, summary_stats)
-
         # Print generation summary
         self.print_generation_summary(datasets, summary_stats)
-
         return datasets, summary_stats
 
     def print_generation_summary(self, datasets, summary_stats):
@@ -681,7 +624,6 @@ class MultimediaREDatasetGenerator:
         print("\n" + "=" * 60)
         print("DATASET GENERATION SUMMARY")
         print("=" * 60)
-
         print(
             f"Total participants: {summary_stats['dataset_info']['total_participants']}"
         )
@@ -699,7 +641,6 @@ class MultimediaREDatasetGenerator:
             f"Non-functional requirements: {summary_stats['requirements']['non_functional_requirements']}"
         )
         print(f"Multimedia files: {summary_stats['multimedia']['total_files']}")
-
         print(f"\nKey improvements (Treatment vs Control):")
         print(
             f"Requirements identified: +{summary_stats['key_results']['requirements_improvement']:.1f}%"
@@ -707,14 +648,11 @@ class MultimediaREDatasetGenerator:
         print(
             f"Stakeholder satisfaction: +{summary_stats['key_results']['satisfaction_improvement']:.1f}%"
         )
-
         print(f"\nFiles generated in: {self.output_dir}")
         for name in datasets.keys():
-            print(f"  ✓ {name}.csv")
-        print(f"  ✓ dataset_summary.json")
-
+            print(f" {name}.csv")
+        print(f" dataset_summary.json")
         print(f"\nDataset generation completed successfully!")
-
 
 def main():
     """Main function with command-line interface"""
@@ -728,31 +666,25 @@ Examples:
   python generate_dataset.py --help
         """,
     )
-
     parser.add_argument(
         "--output-dir",
         default=".",
         help="Output directory for generated files (default: current directory)",
     )
-
     parser.add_argument(
         "--seed",
         type=int,
         default=42,
         help="Random seed for reproducibility (default: 42)",
     )
-
     parser.add_argument(
         "--validate-only",
         action="store_true",
         help="Only validate existing dataset without regenerating",
     )
-
     args = parser.parse_args()
-
     # Create generator
     generator = MultimediaREDatasetGenerator(output_dir=args.output_dir, seed=args.seed)
-
     if args.validate_only:
         # Load and validate existing data
         try:
@@ -764,16 +696,13 @@ Examples:
                 "evaluation_results",
                 "multimedia_metadata",
             ]
-
             for name in file_names:
                 filepath = generator.output_dir / f"{name}.csv"
-                datasets[name] = pd.read_csv(filepath)
-
+                datasets[name] = pd.read_csv(filepath, encoding='utf-8')
             generator.validate_generated_data(datasets)
-            print("✓ Existing dataset validation passed")
-
+            print("Existing dataset validation passed")
         except Exception as e:
-            print(f"✗ Validation failed: {e}")
+            print(f"Validation failed: {e}")
             return 1
     else:
         # Generate new dataset
@@ -783,7 +712,6 @@ Examples:
         except Exception as e:
             logger.error(f"Dataset generation failed: {e}")
             return 1
-
 
 if __name__ == "__main__":
     exit(main())
