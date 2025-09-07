@@ -728,13 +728,13 @@ Usage in other scripts:
 
 # Example usage in other scripts:
 # from dataset_generator import MultimediaREDatasetGenerator
-# 
+#
 # # Create generator instance
 # generator = MultimediaREDatasetGenerator(output_dir="./data", seed=42)
-# 
+#
 # # Generate complete dataset
 # datasets, summary = generator.generate_complete_dataset()
-# 
+#
 # # Access specific datasets
 # demographics = datasets['participants_demographics']
 # evaluation_results = datasets['evaluation_results']
