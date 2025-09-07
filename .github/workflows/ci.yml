@@ -113,13 +113,13 @@ jobs:
           python -c "
           from dataset_generator import MultimediaREDatasetGenerator
           import numpy as np
-          
+
           np.random.seed(42)
-          gen1 = MultimediaREDatasetGenerator()
+          gen1 = MultimediaREDatasetGenerator(output_dir='test_data_1')
           gen1.generate_complete_dataset()
-          
+
           np.random.seed(42)
-          gen2 = MultimediaREDatasetGenerator()
+          gen2 = MultimediaREDatasetGenerator(output_dir='test_data_2')
           gen2.generate_complete_dataset()
           "
 
@@ -173,7 +173,7 @@ jobs:
           gen = MultimediaREDatasetGenerator()
           gen.generate_complete_dataset()
 
-          results = pd.read_csv('generated_data/evaluation_results.csv')  # <- updated file
+          results = pd.read_csv('generated_data/evaluation_results.csv')
           control = results[results['group_assignment'] == 'Control']
           treatment = results[results['group_assignment'] == 'Treatment']
 
@@ -186,7 +186,7 @@ jobs:
           print(f'Improvement: {improvement:.1f}%')
 
           t_stat, p_value = stats.ttest_ind(treatment['requirements_identified'],
-                                            control['requirements_identified'])
+                                      control['requirements_identified'])
           print(f'T-statistic: {t_stat:.3f}, p-value: {p_value:.6f}')
 
           if p_value >= 0.001:
