@@ -5,6 +5,10 @@ This script generates the complete synthetic dataset that reproduces
 the statistical findings from the research paper.
 Usage:
     python generate_dataset.py [--output-dir OUTPUT_DIR] [--seed SEED]
+    
+    # Import in other scripts:
+    from dataset_generator import MultimediaREDatasetGenerator
+    
 Author: Cornelius Chimuanya Okechukwu
 Institution: Tomas Bata University in Zlin
 """
@@ -652,8 +656,8 @@ class MultimediaREDatasetGenerator:
         )
         print(f"\nFiles generated in: {self.output_dir}")
         for name in datasets.keys():
-            print(f" {name}.csv")
-        print(f" dataset_summary.json")
+            print(f"  {name}.csv")
+        print(f"  dataset_summary.json")
         print(f"\nDataset generation completed successfully!")
 
 
@@ -666,7 +670,12 @@ def main():
 Examples:
   python generate_dataset.py
   python generate_dataset.py --output-dir ./data --seed 123
-  python generate_dataset.py --help
+  python generate_dataset.py --validate-only
+  
+Usage in other scripts:
+  from dataset_generator import MultimediaREDatasetGenerator
+  generator = MultimediaREDatasetGenerator(output_dir="./data", seed=42)
+  datasets, summary = generator.generate_complete_dataset()
         """,
     )
     parser.add_argument(
@@ -703,7 +712,7 @@ Examples:
                 filepath = generator.output_dir / f"{name}.csv"
                 datasets[name] = pd.read_csv(filepath, encoding="utf-8")
             generator.validate_generated_data(datasets)
-            print("Existing dataset validation passed")
+            print("Existing dataset validation passed!")
         except Exception as e:
             print(f"Validation failed: {e}")
             return 1
@@ -716,6 +725,20 @@ Examples:
             logger.error(f"Dataset generation failed: {e}")
             return 1
 
+
+# Example usage in other scripts:
+# from dataset_generator import MultimediaREDatasetGenerator
+# 
+# # Create generator instance
+# generator = MultimediaREDatasetGenerator(output_dir="./data", seed=42)
+# 
+# # Generate complete dataset
+# datasets, summary = generator.generate_complete_dataset()
+# 
+# # Access specific datasets
+# demographics = datasets['participants_demographics']
+# evaluation_results = datasets['evaluation_results']
+# ground_truth = datasets['ground_truth_requirements']
 
 if __name__ == "__main__":
     exit(main())
