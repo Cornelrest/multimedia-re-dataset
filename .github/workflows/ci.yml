@@ -116,15 +116,15 @@ jobs:
       - name: Generate dataset with different seeds
         run: |
           python -c "
-          from dataset_generator import RequirementsDatasetGenerator
+          from dataset_generator import MultimediaREDatasetGenerator
           import numpy as np
           
           np.random.seed(42)
-          gen1 = RequirementsDatasetGenerator()
+          gen1 = MultimediaREDatasetGenerator()
           gen1.generate_complete_dataset('test_data_1')
           
           np.random.seed(42)
-          gen2 = RequirementsDatasetGenerator()
+          gen2 = MultimediaREDatasetGenerator()
           gen2.generate_complete_dataset('test_data_2')
           "
 
@@ -172,12 +172,12 @@ jobs:
       - name: Generate and validate statistical properties
         run: |
           python -c "
-          from dataset_generator import RequirementsDatasetGenerator
+          from dataset_generator import MultimediaREDatasetGenerator
           import pandas as pd
           from scipy import stats
           import numpy as np
           
-          gen = RequirementsDatasetGenerator()
+          gen = MultimediaREDatasetGenerator()
           gen.generate_complete_dataset()
           
           results = pd.read_csv('generated_data/participant_results.csv')
