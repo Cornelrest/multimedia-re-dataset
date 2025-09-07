@@ -42,8 +42,7 @@ jobs:
 
       - name: Install system dependencies (macOS)
         if: matrix.os == 'macos-latest'
-        run: |
-          brew install portaudio
+        run: brew install portaudio
 
       - name: Cache pip packages
         uses: actions/cache@v3
@@ -56,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing without audio support"
+          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed"
           pip install -r requirements.txt
           pip install pytest pytest-cov flake8 black pandas numpy scipy
 
@@ -105,38 +104,42 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing"
+          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed"
           pip install -r requirements.txt
 
       - name: Generate dataset with different seeds
         run: |
           python -c "
-          from dataset_generator import MultimediaREDatasetGenerator
-          import numpy as np
-          
-          np.random.seed(42)
-          gen1 = MultimediaREDatasetGenerator()
-          gen1.generate_complete_dataset()
-          
-          np.random.seed(42)
-          gen2 = MultimediaREDatasetGenerator()
-          gen2.generate_complete_dataset()
-          "
+import os
+from dataset_generator import MultimediaREDatasetGenerator
+import numpy as np
+
+os.makedirs('test_data_1', exist_ok=True)
+os.makedirs('test_data_2', exist_ok=True)
+
+np.random.seed(42)
+gen1 = MultimediaREDatasetGenerator()
+gen1.generate_complete_dataset(output_dir='test_data_1')
+
+np.random.seed(42)
+gen2 = MultimediaREDatasetGenerator()
+gen2.generate_complete_dataset(output_dir='test_data_2')
+"
 
       - name: Check reproducibility
         run: |
           python -c "
-          import pandas as pd
-          
-          df1 = pd.read_csv('generated_data/participants.csv')
-          df2 = pd.read_csv('generated_data/participants.csv')
-          
-          if df1.equals(df2):
-              print('✅ Dataset generation is reproducible')
-          else:
-              print('❌ Dataset generation is not reproducible')
-              exit(1)
-          "
+import pandas as pd
+
+df1 = pd.read_csv('test_data_1/evaluation_results.csv')
+df2 = pd.read_csv('test_data_2/evaluation_results.csv')
+
+if df1.equals(df2):
+    print('✅ Dataset generation is reproducible')
+else:
+    print('❌ Dataset generation is not reproducible')
+    exit(1)
+"
 
   statistical-validation:
     runs-on: ubuntu-latest
@@ -158,40 +161,47 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed, continuing"
+          pip install PyAudio || pip install --only-binary=all PyAudio || echo "PyAudio installation failed"
           pip install -r requirements.txt
           pip install pandas numpy scipy
 
       - name: Generate and validate statistical properties
         run: |
           python -c "
-          from dataset_generator import MultimediaREDatasetGenerator
-          import pandas as pd
-          from scipy import stats
-          import numpy as np
+import os
+import pandas as pd
+from scipy import stats
+from dataset_generator import MultimediaREDatasetGenerator
 
-          gen = MultimediaREDatasetGenerator()
-          gen.generate_complete_dataset()
+# Ensure output directory
+os.makedirs('generated_data', exist_ok=True)
 
-          results = pd.read_csv('generated_data/evaluation_results.csv')  # <- updated file
-          control = results[results['group_assignment'] == 'Control']
-          treatment = results[results['group_assignment'] == 'Treatment']
+# Generate dataset in the correct folder
+gen = MultimediaREDatasetGenerator()
+gen.generate_complete_dataset(output_dir='generated_data')
 
-          control_mean = control['requirements_identified'].mean()
-          treatment_mean = treatment['requirements_identified'].mean()
-          improvement = ((treatment_mean - control_mean) / control_mean) * 100
+# Read evaluation results from correct path
+results = pd.read_csv('generated_data/evaluation_results.csv')
+control = results[results['group_assignment'] == 'Control']
+treatment = results[results['group_assignment'] == 'Treatment']
 
-          print(f'Control mean: {control_mean:.1f}')
-          print(f'Treatment mean: {treatment_mean:.1f}')
-          print(f'Improvement: {improvement:.1f}%')
+control_mean = control['requirements_identified'].mean()
+treatment_mean = treatment['requirements_identified'].mean()
+improvement = ((treatment_mean - control_mean) / control_mean) * 100
 
-          t_stat, p_value = stats.ttest_ind(treatment['requirements_identified'],
-                                            control['requirements_identified'])
-          print(f'T-statistic: {t_stat:.3f}, p-value: {p_value:.6f}')
+print(f'Control mean: {control_mean:.1f}')
+print(f'Treatment mean: {treatment_mean:.1f}')
+print(f'Improvement: {improvement:.1f}%')
 
-          if p_value >= 0.001:
-              print('❌ Results not statistically significant at p < 0.001')
-              exit(1)
-          else:
-              print('✅ Statistical validation passed')
-          "
+t_stat, p_value = stats.ttest_ind(
+    treatment['requirements_identified'],
+    control['requirements_identified']
+)
+print(f'T-statistic: {t_stat:.3f}, p-value: {p_value:.6f}')
+
+if p_value >= 0.001:
+    print('❌ Results not statistically significant at p < 0.001')
+    exit(1)
+else:
+    print('✅ Statistical validation passed')
+"
