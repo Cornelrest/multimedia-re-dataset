@@ -1,0 +1,12 @@
+name: multimedia-re
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.9.16
+  - pytorch=2.0.1
+  - torchvision=0.15.2
+  - cudatoolkit=11.8
+  - pip=23.1.2
+  - pip:
+    - -r file:requirements.txt
