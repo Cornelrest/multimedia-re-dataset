@@ -22,14 +22,16 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler('dataset_generator.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+        logging.FileHandler("dataset_generator.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger(__name__)
 
+
 class MultimediaREDatasetGenerator:
     """Generate complete multimedia requirements engineering dataset"""
+
     def __init__(self, output_dir=".", seed=42):
         self.output_dir = Path(output_dir)
         self.seed = seed
@@ -526,11 +528,11 @@ class MultimediaREDatasetGenerator:
         for name, df in datasets.items():
             filename = f"{name}.csv"
             filepath = self.output_dir / filename
-            df.to_csv(filepath, index=False, encoding='utf-8')
+            df.to_csv(filepath, index=False, encoding="utf-8")
             logger.info(f"Saved {filename} ({len(df)} rows)")
         # Save summary statistics
         summary_file = self.output_dir / "dataset_summary.json"
-        with open(summary_file, "w", encoding='utf-8') as f:
+        with open(summary_file, "w", encoding="utf-8") as f:
             json.dump(summary_stats, f, indent=2)
         logger.info("Saved dataset_summary.json")
 
@@ -654,6 +656,7 @@ class MultimediaREDatasetGenerator:
         print(f" dataset_summary.json")
         print(f"\nDataset generation completed successfully!")
 
+
 def main():
     """Main function with command-line interface"""
     parser = argparse.ArgumentParser(
@@ -698,7 +701,7 @@ Examples:
             ]
             for name in file_names:
                 filepath = generator.output_dir / f"{name}.csv"
-                datasets[name] = pd.read_csv(filepath, encoding='utf-8')
+                datasets[name] = pd.read_csv(filepath, encoding="utf-8")
             generator.validate_generated_data(datasets)
             print("Existing dataset validation passed")
         except Exception as e:
@@ -712,6 +715,7 @@ Examples:
         except Exception as e:
             logger.error(f"Dataset generation failed: {e}")
             return 1
+
 
 if __name__ == "__main__":
     exit(main())
