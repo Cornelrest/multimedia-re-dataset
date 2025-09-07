@@ -55,3 +55,6 @@ yake==0.4.8
 
 # Utilities
 ffmpeg-python==0.2.0
+
+# Code formatting
+black==25.1.0
